@@ -1,0 +1,3 @@
+sort1.o: sort1.c
+sort2.o: sort2.c
+sort3.o: sort3.c

@@ -1,6 +1,6 @@
 CFLAGS := -g -Werror
 
-TARGETS := sort1 sort3 sort2
+TARGETS := sort1 sort2 sort3
 
 all: $(TARGETS)
 
