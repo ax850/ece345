@@ -1,0 +1,88 @@
+2)
+
+	How to build:
+
+	In the same directory as the source files, type the command: `make`
+	This will create the following executables: sort1, sort2, sort3
+
+	Example:
+		1. cd ~/ece345/assignment1
+		2. make
+		
+3)
+
+	i)  Insertion Sort (Worst complexity: O(n^2)) --> From Lecutures // Executable: sort1
+		
+			void insertion_sort(int *primary_key_arr, int n){
+				//printf("%d and size is %d",primary_key_arr[0],n);
+				int i = 1;
+				for (i; i < n; i++){
+					int key = primary_key_arr[i];
+					int j = i - 1; 
+					while(j >= 0 && primary_key_arr[j] > key){
+						primary_key_arr[j+1] = primary_key_arr[j];
+						j = j-1;
+					}
+					primary_key_arr[j+1] = key;
+				}
+				
+			}
+		
+	ii) Merge Sort (Worst complexity: O(nlogn)) --> From Lecutures // Executable: sort2
+
+			void Merge(int * primary_key_arr, int left, int mid, int right){
+				int l1, l2, i;
+
+			   for(l1 = left, l2 = mid + 1, i = left; l1 <= mid && l2 <= right; i++) {
+				  if(a[l1] <= a[l2])
+					 b[i] = a[l1++];
+				  else
+					 b[i] = a[l2++];
+			   }
+			   
+			   while(l1 <= mid)    
+				  b[i++] = a[l1++];
+
+			   while(l2 <= right)   
+				  b[i++] = a[l2++];
+
+			   for(i = left; i <= right; i++)
+				  a[i] = b[i];
+			}
+
+			void merge_sort(int * primary_key_arr,int left, int right){
+				if( left < right){
+					int mid  = (low + high)/2;
+					merge_sort(primary_key_arr,low,mid);
+					merge_sort(primary_key_arr,mid + 1,high);
+					Merge(primary_key_arr,left,mid,right);
+					
+				}
+				else{
+					return;
+				}
+			}	
+
+	iii)Bubble Sort (Worst complexity: O(n^2)) --> From https://www.tutorialspoint.com/data_structures_algorithms/bubble_sort_algorithm.htm // Executable: sort3
+	
+			void bubble_sort(int * primary_key_arr, int size){
+				int temp;
+				int i,j;
+				
+				bool swapped = false;
+				for(i = 0; i < size - 1; i++){
+					swapped = false;
+					for(j = 0; j < size - i - 1; j++){
+						if(primary_key_arr[j] > primary_key_arr[j+1]){
+							temp = primary_key_arr[j];
+							primary_key_arr[j] = primary_key_arr[j+1];
+							primary_key_arr[j+1] = temp;
+							swapped = true;
+						}
+					}
+					if(!swapped){
+						break;
+					}
+				}
+				
+			}
