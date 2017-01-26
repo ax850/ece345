@@ -55,7 +55,12 @@ int main(int argc, char **argv){
 		primary_key_arr[i] = atoi(pt);
 		i++;
     }
+	
+	clock_t begin = clock();
 	bubble_sort(primary_key_arr, i);
+	clock_t end = clock();
+	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+	printf("%f\n",time_spent);
 	
 	char line_t[1024];
 	int x = 0;
