@@ -34,6 +34,7 @@ void bubble_sort(int * primary_key_arr, int size){
 				swapped = true;
 			}
 		}
+		/* Optimization part for Question 4d */
 		if(!swapped){
 			break;
 		}
@@ -60,7 +61,7 @@ int main(int argc, char **argv){
 	bubble_sort(primary_key_arr, i);
 	clock_t end = clock();
 	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-	printf("%f\n",time_spent);
+	//printf("%f\n",time_spent);
 	
 	char line_t[1024];
 	int x = 0;
@@ -73,7 +74,7 @@ int main(int argc, char **argv){
 			char *pt = strtok(line_t, ",");
 			//printf("%s and primary_key = %d at index = %d\n",pt,primary_key_arr[x],x);
 			if(primary_key_arr[x] == atoi(pt)){
-				//printf("%s\n",temp);
+				printf("%s\n",temp);
 				break;
 			}
 		}

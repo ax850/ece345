@@ -52,7 +52,7 @@ int main(int argc, char **argv){
 	clock_t end = clock();
 	
 	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-	printf("%f\n",time_spent);
+	//printf("%f\n",time_spent);
 	
 	
 	char line_t[1024];
@@ -66,7 +66,7 @@ int main(int argc, char **argv){
 			char *pt = strtok(line_t, ",");
 			//printf("%s and primary_key = %d at index = %d\n",pt,primary_key_arr[x],x);
 			if(primary_key_arr[x] == atoi(pt)){
-				//printf("%s\n",temp);
+				printf("%s\n",temp);
 				break;
 			}
 		}

@@ -80,6 +80,7 @@
 							swapped = true;
 						}
 					}
+					/* Optimization part for Question 4d */
 					if(!swapped){
 						break;
 					}
@@ -87,4 +88,3 @@
 				
 			}
 			
-4)
