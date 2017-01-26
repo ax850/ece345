@@ -45,7 +45,7 @@ int main(int argc, char **argv){
 	FILE* stream = fopen(argv[1], "r");
 	int *primary_key_arr;
 	
-	primary_key_arr = (int *)malloc(sizeof(int)*50);
+	primary_key_arr = (int *)malloc(sizeof(int)*7000000000);
 	
 	char line[1024];
 	int i = 0;
@@ -73,7 +73,7 @@ int main(int argc, char **argv){
 			char *pt = strtok(line_t, ",");
 			//printf("%s and primary_key = %d at index = %d\n",pt,primary_key_arr[x],x);
 			if(primary_key_arr[x] == atoi(pt)){
-				printf("%s\n",temp);
+				//printf("%s\n",temp);
 				break;
 			}
 		}
