@@ -35,9 +35,9 @@ void bubble_sort(int * primary_key_arr, int size){
 			}
 		}
 		/* Optimization part for Question 4d */
-		if(!swapped){
+		/*if(!swapped){
 			break;
-		}
+		}*/
 	}
 	
 }
@@ -79,6 +79,7 @@ int main(int argc, char **argv){
 			}
 		}
 		x++;
+		fclose(stream1);
     }
 	
 	return 0;

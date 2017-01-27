@@ -37,7 +37,7 @@ int main(int argc, char **argv){
 	FILE* stream = fopen(argv[1], "r");
 	int *primary_key_arr;
 	
-	primary_key_arr = (int *)malloc(sizeof(int)*7000000000);
+	primary_key_arr = (int *)malloc(sizeof(int)*10000);
 	
 	char line[1024];
 	int i = 0;
@@ -71,7 +71,8 @@ int main(int argc, char **argv){
 			}
 		}
 		x++;
+		fclose(stream1);
     }
-	
+	free(primary_key_arr);
 	return 0;
 }

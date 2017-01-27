@@ -122,6 +122,7 @@ int main(int argc, char **argv){
 			}
 		}
 		x++;
+		fclose(stream1);
     }
 	
 	return 0;
