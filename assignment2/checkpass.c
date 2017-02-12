@@ -30,17 +30,10 @@ void flipString (char original[], char flipped[]){
     
     int i;
     int j=0;
-    //flipped = malloc(strlen(original)-1);
-    //printf("flipped string before %s\n", flipped);
-	//printf("original string %s", original);
-	//printf("strlen of original %d\n", strlen(original));
     for( i=strlen(original)-1 ; i >= 0 ; i--, j++ ){
-		//printf("i = %d, j = %d\n", i, j);
         flipped[j]=original[i];
     }
 	flipped[strlen(original)] = 0;
-	//printf("flipped string in function %s", flipped);
-    //flipped[strlen(flipped)-1] = 0;
 }
 
 bool checkReqs (char password[], int length){
@@ -77,14 +70,14 @@ unsigned long hash(unsigned char *str)
     while (c = *str++)
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
-	return hash%100000;
+    return hash%100000;
 }
 
 bool checkChains (hashEntry *root, char password[]){
 
     root = root->next;
     while( root->next != NULL ){
-        // Check all entries except last one
+        // Checks all entries except last one
         if( !strcmp(root->password, password) ){
             return false;
         }
@@ -104,10 +97,9 @@ int main(int argc, char** argv) {
     char pass[128];
     char flipped[128];
     hashEntry *newEntry;
-    hashEntry *temp;
     int i = 0;
     unsigned long hashval = 0;
-	int reverseHashval = 0;
+    int reverseHashval = 0;
     int numCol = 0;
     // Open file for reading
     fp = fopen("password.txt", "a+");
@@ -120,23 +112,16 @@ int main(int argc, char** argv) {
     while( fgets(pass, 128, fp)!=NULL ){
         // Copy the passwords into the hashtable
         newEntry = malloc(sizeof(hashEntry));
-		// Need to add this to ignore counting newlines and NULL terminating character
-		//printf("Before sanitize %d", strlen(pass));
-		sanitize(pass);
-		//printf("After sanitize %d", strlen(pass));
-		//pass[strlen(pass) - 1] = 0;
+        sanitize(pass);
         strcpy(newEntry->password, pass);
         newEntry->next = NULL;
         hashval = (int)hash(pass);
         if ( table[hashval] == NULL ){
             table[hashval] = newEntry;
-			//printf("Inputted String\n");
-			//printf("string %s\n", table[hashval]->password);
         }
         else{
             table[hashval]->next = newEntry;
         }
-       //printf("strlen = %d hashval %d for password %s\n", strlen(pass), hashval, pass);
     }
     
     // Correct number of arguments
@@ -144,35 +129,21 @@ int main(int argc, char** argv) {
     // check the password to make sure it meets the basic requirements (length, no complex chars)
         if( checkReqs(argv[1], strlen(argv[1])) ){
             // Need to check if the password exists or not
-			//printf("argv[1]", argv[1]);
             hashval = hash(argv[1]);
-            //printf("initial hashval = %ul\n");
             // Entry in table is empty
             // Check to make sure the reverse is not in the table
-			flipped[0] = 0;
-            //printf("previous flipped string %s\n", flipped);
+            flipped[0] = 0;
             flipString(argv[1], flipped);
             reverseHashval = hash(flipped);
-            
-            //printf("reverse pass = %s\nlength = %d\n", flipped, strlen(flipped));
-            //printf("pass = %s\nlength = %d\n", argv[1], strlen(argv[1]));
             //printf("strlen = %d reverseHashval %d for password %s", strlen(flipped), reverseHashval, flipped);
             // Entry does not exist for password and reverse password
             if ( table[hashval] == NULL && table[reverseHashval] == NULL ){
-				//printf("before table[hashval] = %s\n", table[hashval]->password);
-				//printf("input pass = %s\n", argv[1]);
-				//printf("CASE 1\n");
+                //printf("CASE 1\n");
                 printf("VALID\n");
                 newEntry = malloc(sizeof(hashEntry));
                 strcpy(newEntry->password, argv[1]);
-				//printf("after table[hashval] = %s\n", newEntry->password);
                 newEntry->next = NULL;
                 hashval = (int)hash(argv[1]);
-				//printf("hashval %d\n", hashval);
-                hashval = (int)hash(argv[1]);
-				//printf("hashval %d\n", hashval);
-                hashval = (int)hash(argv[1]);
-				//printf("hashval %d\n", hashval);
                 // Add entry to the hashtable
                 table[hashval] = newEntry;
                 // Write password to password.txt
@@ -183,12 +154,12 @@ int main(int argc, char** argv) {
             }
             // Possible collision
             else if( table[hashval] == NULL && table[reverseHashval] != NULL ){
-				//printf("CASE 2\n");
-				//printf("REVERSEHASHVAL NOT EQUAL TO NULL\n");
+                //printf("CASE 2\n");
+                //printf("REVERSEHASHVAL NOT EQUAL TO NULL\n");
                 // Only one entry, check that
                 if( table[reverseHashval]->next == NULL ){
-					//printf("reverse hashval password string %s\n", table[reverseHashval]->password);
-					//printf("inputted password string %s\n", argv[1]);
+                    //printf("reverse hashval password string %s\n", table[reverseHashval]->password);
+                    //printf("inputted password string %s\n", argv[1]);
                     if (!strcmp(table[reverseHashval]->password, flipped)){
                         printf("INVALID\n");
                         fclose(fp);
@@ -221,7 +192,7 @@ int main(int argc, char** argv) {
                         newEntry = malloc(sizeof(hashEntry));
                         strcpy(newEntry->password, argv[1]);
                         newEntry->next = NULL;
-                        hashval = (int)hash(pass);
+                        hashval = (int)hash(argv[1]);
                         // Add entry to the hashtable
                         table[hashval] = newEntry;
                         // Write password to password.txt
@@ -232,11 +203,11 @@ int main(int argc, char** argv) {
                 }
             }
             else if( table[hashval] != NULL && table[reverseHashval] == NULL ){
-				//printf("CASE 3\n");
+                    //printf("CASE 3\n");
                 if( table[hashval]->next == NULL ){
-					//printf("HASHVAL NOT NULL REVERSEHASHVAL NULL\n");
-					//printf("HASHTABLE PASS %s\n", table[hashval]->password);
-					//printf("INPUT PASS %s\n", argv[1]);
+                    //printf("HASHVAL NOT NULL REVERSEHASHVAL NULL\n");
+                    //printf("HASHTABLE PASS %s\n", table[hashval]->password);
+                    //printf("INPUT PASS %s\n", argv[1]);
                     if( !strcmp(table[hashval]->password, argv[1]) ){
                         printf("INVALID\n");
                         fclose(fp);
@@ -247,7 +218,7 @@ int main(int argc, char** argv) {
                         newEntry = malloc(sizeof(hashEntry));
                         strcpy(newEntry->password, argv[1]);
                         newEntry->next = NULL;
-                        hashval = (int)hash(pass);
+                        hashval = (int)hash(argv[1]);
                         // Add entry to the hashtable
                         table[hashval]->next = newEntry;
                         // Write password to password.txt
@@ -267,7 +238,7 @@ int main(int argc, char** argv) {
                         newEntry = malloc(sizeof(hashEntry));
                         strcpy(newEntry->password, argv[1]);
                         newEntry->next = NULL;
-                        hashval = (int)hash(pass);
+                        hashval = (int)hash(argv[1]);
                         // Add entry to the hashtable
                         last->next = newEntry;
                         // Write password to password.txt
@@ -291,7 +262,7 @@ int main(int argc, char** argv) {
                         newEntry = malloc(sizeof(hashEntry));
                         strcpy(newEntry->password, argv[1]);
                         newEntry->next = NULL;
-                        hashval = (int)hash(pass);
+                        hashval = (int)hash(argv[1]);
                         // Add entry to the hashtable
                         table[hashval]->next = newEntry;
                         // Write password to password.txt
@@ -319,7 +290,7 @@ int main(int argc, char** argv) {
                             newEntry = malloc(sizeof(hashEntry));
                             strcpy(newEntry->password, argv[1]);
                             newEntry->next = NULL;
-                            hashval = (int)hash(pass);
+                            hashval = (int)hash(argv[1]);
                             // Add entry to the hashtable
                             last = newEntry;
                             // Write password to password.txt
@@ -343,7 +314,7 @@ int main(int argc, char** argv) {
                                 newEntry = malloc(sizeof(hashEntry));
                                 strcpy(newEntry->password, argv[1]);
                                 newEntry->next = NULL;
-                                hashval = (int)hash(pass);
+                                hashval = (int)hash(argv[1]);
                                 // Add entry to the hashtable
                                 last = newEntry;
                                 // Write password to password.txt
