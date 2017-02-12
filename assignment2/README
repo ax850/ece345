@@ -1,2 +1,2 @@
-1. To build run the basic gcc command:
+1. To build run with gcc with the following command:
 # gcc checkpass.c -o checkpass
