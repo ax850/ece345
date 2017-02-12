@@ -1,55 +1,46 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/* 
- * File:   main.c
- * Author: JonChan
- *
- * Created on February 1, 2017, 11:47 AM
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
-/*
- * 
- */
 
 typedef struct {
     char password[128];
     struct hashEntry *next;
 }hashEntry;
 
-// function to check whether plaintext password is in the %pwd/password.txt file
-// also checks if the plaintext password meets the requirements specified in the handout
-// ******Need to create efficient way of comparing with the reverse password*******
+// Global Hash Table
+hashEntry *table[100000];
+hashEntry *last;
 
-bool checkFlip (char original[], int hashval){
-    
-    char flip[128];
-    // check if there is a way to copy the reverse instead
-    strcpy(flip, original);
-    
-    // check the hashtable at hashval+1
-    
+void sanitize (char string[]){
+    int i;
+
+    for ( i = strlen(string)-1; i > 0 ; i-- ){
+            if( !isalnum(string[i]) ){
+                    string[i] = 0;
+            }
+            else{
+                    return;
+            }
+    }
 }
 
-char *flipString (char original[]){
+void flipString (char original[], char flipped[]){
     
-    char *flipped[128];
     int i;
     int j=0;
-    
-    for( i=strlen(original)-1 ; i >= 0&& i != j; i--, j++ ){
+    //flipped = malloc(strlen(original)-1);
+    //printf("flipped string before %s\n", flipped);
+	//printf("original string %s", original);
+	//printf("strlen of original %d\n", strlen(original));
+    for( i=strlen(original)-1 ; i >= 0 ; i--, j++ ){
+		//printf("i = %d, j = %d\n", i, j);
         flipped[j]=original[i];
     }
-    return *flipped;
-    
+	flipped[strlen(original)] = 0;
+	//printf("flipped string in function %s", flipped);
+    //flipped[strlen(flipped)-1] = 0;
 }
 
 bool checkReqs (char password[], int length){
@@ -57,8 +48,6 @@ bool checkReqs (char password[], int length){
     int i;
     char pass[128];
     strcpy(pass, password);
-    
-    printf ("length: %d\npassword: %s", length, password);
     
     // Check to make sure that the length requirements are met
     if( (length >= 6) && (length <= 12) ){
@@ -74,11 +63,8 @@ bool checkReqs (char password[], int length){
         printf("length violation\n");
         return false;
     }
-    //pass[0] = '\0';
     
-    return true;
-    // Meets the password requirements, need to check if there exists an entry already in passwords.txt
-    
+    return true;   
 }
 
 // hashing function that hashes the plaintext password inputted from the user
@@ -91,47 +77,289 @@ unsigned long hash(unsigned char *str)
     while (c = *str++)
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
-    return hash%100000;
+	return hash%100000;
 }
+
+bool checkChains (hashEntry *root, char password[]){
+
+    root = root->next;
+    while( root->next != NULL ){
+        // Check all entries except last one
+        if( !strcmp(root->password, password) ){
+            return false;
+        }
+        root = root->next;
+    }
+    // Check last hashEntry
+    if( !strcmp(root->password, password) ){
+        return false;
+    }
+    last = root;
+    return true;
+}
+
 
 int main(int argc, char** argv) {
     FILE *fp;
-    hashEntry newEntry;
-    newEntry.next = NULL;
     char pass[128];
-    hashEntry *table[100000];
+    char flipped[128];
+    hashEntry *newEntry;
+    hashEntry *temp;
     int i = 0;
-    int hashval;
-    
+    unsigned long hashval = 0;
+	int reverseHashval = 0;
+    int numCol = 0;
     // Open file for reading
-    fp = fopen("password.txt", "rw");
-    if(fp == NULL)
-    {
+    fp = fopen("password.txt", "a+");
+    if(fp == NULL){
         printf("Password file empty or does not exist\n");
         return -1;
     }
-    // Read a line from the file and store into str if there is a line
-    while( fgets(pass, 128, fp)!=NULL )
-    {
-        // Check for the length requirements
-        // **** DON'T NEED TO CHECK IF THE REQUIREMENTS ARE MET FOR PASSWORD IN THE TEXT FILES
-        printf("VALID\n");
-        strcpy(newEntry.password, pass);
-        newEntry.next = NULL;
+    // Parse password.txt file and store into hash table
+    // Assume that all passwords in the text file meet the requirements
+    while( fgets(pass, 128, fp)!=NULL ){
+        // Copy the passwords into the hashtable
+        newEntry = malloc(sizeof(hashEntry));
+		// Need to add this to ignore counting newlines and NULL terminating character
+		//printf("Before sanitize %d", strlen(pass));
+		sanitize(pass);
+		//printf("After sanitize %d", strlen(pass));
+		//pass[strlen(pass) - 1] = 0;
+        strcpy(newEntry->password, pass);
+        newEntry->next = NULL;
         hashval = (int)hash(pass);
-        // *** CHECK HERE IF THERE IS A COLLISION AND DEAL WITH IT HERE
-        table[hashval] = &newEntry;
-        printf("table[%d] value with %s", hashval, table[hashval]->password);
+        if ( table[hashval] == NULL ){
+            table[hashval] = newEntry;
+			//printf("Inputted String\n");
+			//printf("string %s\n", table[hashval]->password);
+        }
+        else{
+            table[hashval]->next = newEntry;
+        }
+       //printf("strlen = %d hashval %d for password %s\n", strlen(pass), hashval, pass);
     }
     
-    // Correct arguments
+    // Correct number of arguments
     if ( argc == 2 ){
-    // check the password to make sure it meets the basic requirements (length, 
+    // check the password to make sure it meets the basic requirements (length, no complex chars)
         if( checkReqs(argv[1], strlen(argv[1])) ){
             // Need to check if the password exists or not
-            printf("VALID\n");
-            hashval = (int)hash(argv[1]);
+			//printf("argv[1]", argv[1]);
+            hashval = hash(argv[1]);
+            //printf("initial hashval = %ul\n");
+            // Entry in table is empty
+            // Check to make sure the reverse is not in the table
+			flipped[0] = 0;
+            //printf("previous flipped string %s\n", flipped);
+            flipString(argv[1], flipped);
+            reverseHashval = hash(flipped);
+            
+            //printf("reverse pass = %s\nlength = %d\n", flipped, strlen(flipped));
+            //printf("pass = %s\nlength = %d\n", argv[1], strlen(argv[1]));
+            //printf("strlen = %d reverseHashval %d for password %s", strlen(flipped), reverseHashval, flipped);
+            // Entry does not exist for password and reverse password
+            if ( table[hashval] == NULL && table[reverseHashval] == NULL ){
+				//printf("before table[hashval] = %s\n", table[hashval]->password);
+				//printf("input pass = %s\n", argv[1]);
+				//printf("CASE 1\n");
+                printf("VALID\n");
+                newEntry = malloc(sizeof(hashEntry));
+                strcpy(newEntry->password, argv[1]);
+				//printf("after table[hashval] = %s\n", newEntry->password);
+                newEntry->next = NULL;
+                hashval = (int)hash(argv[1]);
+				//printf("hashval %d\n", hashval);
+                hashval = (int)hash(argv[1]);
+				//printf("hashval %d\n", hashval);
+                hashval = (int)hash(argv[1]);
+				//printf("hashval %d\n", hashval);
+                // Add entry to the hashtable
+                table[hashval] = newEntry;
+                // Write password to password.txt
+                fprintf(fp, "%s\n", argv[1]);
+                fclose(fp);
+                return 0;
+                // Reverse of password may exist, need to check chains
+            }
+            // Possible collision
+            else if( table[hashval] == NULL && table[reverseHashval] != NULL ){
+				//printf("CASE 2\n");
+				//printf("REVERSEHASHVAL NOT EQUAL TO NULL\n");
+                // Only one entry, check that
+                if( table[reverseHashval]->next == NULL ){
+					//printf("reverse hashval password string %s\n", table[reverseHashval]->password);
+					//printf("inputted password string %s\n", argv[1]);
+                    if (!strcmp(table[reverseHashval]->password, flipped)){
+                        printf("INVALID\n");
+                        fclose(fp);
+                        return -1;
+                    }
+                    // Reverse password does not exist, insert into hashtable and write to file
+                    else{
+                        printf("VALID\n");
+                        newEntry = malloc(sizeof(hashEntry));
+                        strcpy(newEntry->password, argv[1]);
+                        newEntry->next = NULL;
+                        hashval = (int)hash(pass);
+                        // Add entry to the hashtable
+                        table[hashval] = newEntry;
+                        // Write password to password.txt
+                        fprintf(fp, "%s\n", argv[1]);
+                        fclose(fp);
+                        return 0;
+                    }
+                }
+                // Need to check chains!
+                else if( table[reverseHashval]->next != NULL ){
+                    if( !checkChains(table[reverseHashval], flipped) ){
+                        printf("INVALID\n");
+                        fclose(fp);
+                        return -1;
+                    }
+                    else{
+                        printf("VALID\n");
+                        newEntry = malloc(sizeof(hashEntry));
+                        strcpy(newEntry->password, argv[1]);
+                        newEntry->next = NULL;
+                        hashval = (int)hash(pass);
+                        // Add entry to the hashtable
+                        table[hashval] = newEntry;
+                        // Write password to password.txt
+                        fprintf(fp, "%s\n", argv[1]);
+                        fclose(fp);
+                        return 0;
+                    }
+                }
+            }
+            else if( table[hashval] != NULL && table[reverseHashval] == NULL ){
+				//printf("CASE 3\n");
+                if( table[hashval]->next == NULL ){
+					//printf("HASHVAL NOT NULL REVERSEHASHVAL NULL\n");
+					//printf("HASHTABLE PASS %s\n", table[hashval]->password);
+					//printf("INPUT PASS %s\n", argv[1]);
+                    if( !strcmp(table[hashval]->password, argv[1]) ){
+                        printf("INVALID\n");
+                        fclose(fp);
+                        return -1;
+                    }
+                    else{
+                        printf("VALID\n");
+                        newEntry = malloc(sizeof(hashEntry));
+                        strcpy(newEntry->password, argv[1]);
+                        newEntry->next = NULL;
+                        hashval = (int)hash(pass);
+                        // Add entry to the hashtable
+                        table[hashval]->next = newEntry;
+                        // Write password to password.txt
+                        fprintf(fp, "%s\n", argv[1]);
+                        fclose(fp);
+                        return 0;
+                    }
+                }
+                else if( table[hashval]->next != NULL ){
+                    if( !checkChains(table[hashval], argv[1]) ){
+                        printf("INVALID\n");
+                        fclose(fp);
+                        return -1;
+                    }
+                    else{
+                        printf("VALID\n");
+                        newEntry = malloc(sizeof(hashEntry));
+                        strcpy(newEntry->password, argv[1]);
+                        newEntry->next = NULL;
+                        hashval = (int)hash(pass);
+                        // Add entry to the hashtable
+                        last->next = newEntry;
+                        // Write password to password.txt
+                        fprintf(fp, "%s\n", argv[1]);
+                        fclose(fp);
+                        return 0;
+                    }
+                }
+            }
+            else if( table[hashval] != NULL && table[reverseHashval] != NULL ){
+				//printf("CASE 4\n");
+                if( table[hashval]->next == NULL && table[reverseHashval]->next == NULL ){
+                    if( !strcmp(table[hashval]->password, argv[1]) || !strcmp(table[reverseHashval]->password, flipped) ){
+                        printf("INVALID\n");
+                        fclose(fp);
+                        //printf("Reverse Password Found");
+                        return -1;
+                    }
+                    else{
+                        printf("VALID\n");
+                        newEntry = malloc(sizeof(hashEntry));
+                        strcpy(newEntry->password, argv[1]);
+                        newEntry->next = NULL;
+                        hashval = (int)hash(pass);
+                        // Add entry to the hashtable
+                        table[hashval]->next = newEntry;
+                        // Write password to password.txt
+                        fprintf(fp, "%s\n", argv[1]);
+                        fclose(fp);
+                        return 0;
+                    }
+                }
+                else if( table[hashval]->next != NULL && table[reverseHashval]->next == NULL ) {
+                    if( !strcmp(table[hashval]->password, argv[1]) || !strcmp(table[reverseHashval]->password, flipped) ){
+                        printf("INVALID\n");
+                        fclose(fp);
+                        printf("Reverse Password Found");
+                        return -1;
+                    }
+                    else{
+                        if( !checkChains(table[hashval], argv[1]) ){
+                            printf("INVALID\n");
+                            fclose(fp);
+                            printf("Reverse Password Found");
+                            return -1;
+                        }
+                        else{
+                            printf("VALID\n");
+                            newEntry = malloc(sizeof(hashEntry));
+                            strcpy(newEntry->password, argv[1]);
+                            newEntry->next = NULL;
+                            hashval = (int)hash(pass);
+                            // Add entry to the hashtable
+                            last = newEntry;
+                            // Write password to password.txt
+                            fprintf(fp, "%s\n", argv[1]);
+                            fclose(fp);
+                            return 0;
+                        }
+                    }
+                }
+                else if( table[hashval]->next != NULL && table[reverseHashval]->next != NULL ) {
+                    if( !strcmp(table[hashval]->password, argv[1]) || !strcmp(table[reverseHashval]->password, flipped) ){
+                        printf("INVALID\n");
+                        fclose(fp);
+                        printf("Reverse Password Found");
+                        return -1;
+                    }
+                    else{
+                        if( checkChains(table[reverseHashval], flipped) ){
+                            if( checkChains(table[hashval], argv[1]) ){
+                                printf("VALID\n");
+                                newEntry = malloc(sizeof(hashEntry));
+                                strcpy(newEntry->password, argv[1]);
+                                newEntry->next = NULL;
+                                hashval = (int)hash(pass);
+                                // Add entry to the hashtable
+                                last = newEntry;
+                                // Write password to password.txt
+                                fprintf(fp, "%s\n", argv[1]);
+                                fclose(fp);
+                                return 0;
+                            }
+                        printf("INVALID\n");
+                        fclose(fp);
+                        printf("Reverse Password Found");
+                        return -1;
+                    }
+                }
+            }
         }
+        // Does not meet requirements
         else{
             printf("INVALID\n");
         }
@@ -142,5 +370,6 @@ int main(int argc, char** argv) {
     }
     fclose(fp);
     return (EXIT_SUCCESS);
+}
 }
 
