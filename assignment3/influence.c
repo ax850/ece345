@@ -1,7 +1,7 @@
-/*Queue - Linked List implementation*/
+//A3 program. Takes command "influence graph.txt T" and finds TOP1&2 influencers
 #include<stdio.h>
 #include<stdlib.h>
-#include <time.h>
+#include<time.h>
 #include<sys/time.h>
 
 struct qNode {
@@ -166,7 +166,7 @@ void findMaxSpread(Node** vertex, int nodes, int *topone, int *spreaderino) {
             node = i;
         } else if (vertex[i]->spread == max) {
             counter++; //Randomly breaks tie. This method does not need to
-            //store all values and break at the end, ask me for proof of the
+            //store all values to break at the end, ask me for proof of the
             //probabilistic outcomes
             random = rand() % 100;
             if (random < (100 / counter)) {
